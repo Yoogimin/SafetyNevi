@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>SafetyNevi - 재난 시뮬레이터</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "맑은 고딕", sans-serif; padding: 20px; background-color: #f0f2f5; display: flex; justify-content: center; }
+        .container { max-width: 800px; width: 100%; background-color: #fff; padding: 20px 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        h1 { text-align: center; color: #333; margin-top: 0; }
+        fieldset { border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 25px; background: #fff; }
+        legend { font-size: 1.2em; font-weight: 600; padding: 0 10px; }
+        .legend-circle { color: #007bff; }
+        .legend-polygon { color: #d9534f; }
+        .legend-status { color: #28a745; }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: #555; }
+        .form-group input, .form-group select { width: 95%; padding: 10px 12px; font-size: 14px; border: 1px solid #ccc; border-radius: 5px; }
+
+        .input-group { display: flex; gap: 10px; }
+        .input-group input { flex-grow: 1; }
+        .input-group button { padding: 0 15px; background-color: #666; color: white; border: none; border-radius: 5px; cursor: pointer; }
+
+        button.simulate-btn { width: 100%; padding: 12px; font-size: 16px; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+        #simulate-btn-circle { background-color: #007bff; }
+        #simulate-btn-area { background-color: #d9534f; }
+        button:hover { opacity: 0.9; }
+
+        /* 현황 테이블 스타일 */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
+        th { background-color: #f8f9fa; font-weight: bold; color: #555; }
+        .btn-delete { background-color: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .badge { padding: 3px 8px; border-radius: 12px; color: white; font-size: 11px; font-weight: bold; }
+
+        #result { margin-top: 20px; font-weight: bold; padding: 10px; border-radius: 5px; text-align: center; display: none; }
+        #result.success { color: #155724; background-color: #d4edda; display: block; }
+        #result.error { color: #721c24; background-color: #f8d7da; display: block; }
+    </style>
+
+    <!-- 🌟 파비콘 추가: /img/logo/favicon.png 및 /img/logo/favicon.ico 🌟 -->
+    <link rel="icon" type="image/png" href="/img/logo/favicon.png">
+    <link rel="shortcut icon" type="image/x-icon" href="/img/logo/favicon.ico">
+</head>
+<body>
+
+<div class="container">
+    <h1>⚡ SafetyNevi 통합 관제실</h1>
+
+    <fieldset>
+        <legend class="legend-status">🚨 현재 발령 중인 재난 현황</legend>
+        <div style="text-align: right; margin-bottom: 10px;">
+            <button onclick="loadActiveDisasters()" style="background:#28a745; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;">🔄 새로고침</button>
+        </div>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>유형</th>
+                <th>위치/지역</th>
+                <th>종료 예정</th>
+                <th>관리</th>
+            </tr>
+            </thead>
+            <tbody id="disaster-list-body">
+            <tr><td colspan="5" style="text-align:center;">데이터 로딩 중...</td></tr>
+            </tbody>
+        </table>
+    </fieldset>
+
+    <hr style="border:0; border-top:1px dashed #ccc; margin:30px 0;">
+
+    <fieldset>
+        <legend>1. 재난 위치 설정</legend>
+        <div class="form-group">
+            <label>중심 주소 검색</label>
+            <div class="input-group">
+                <input type="text" id="address" placeholder="주소를 검색하세요" readonly>
+                <button id="search-address-btn">🔍 검색</button>
+            </div>
+        </div>
+        <input type="hidden" id="lat"><input type="hidden" id="lon"><input type="hidden" id="areaName">
+    </fieldset>
+
+    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+        <fieldset style="flex: 1; min-width: 300px;">
+            <legend class="legend-circle">2. 원형 재난 (Point)</legend>
+            <div class="form-group">
+                <label>재난 유형</label>
+                <select id="type-circle">
+                    <option value="missile">🚀 미사일</option>
+                    <option value="fire">🔥 화재</option>
+                    <option value="quake">🌋 지진</option>
+                    <option value="lightning">⚡ 낙뢰</option>
+                    <option value="heavyRain">🌧️ 폭우</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>반경 (m)</label>
+                <input type="number" id="radius" value="1500">
+            </div>
+            <div class="form-group">
+                <label>지속 (분)</label>
+                <input type="number" id="duration-circle" value="30">
+            </div>
+            <button id="simulate-btn-circle" class="simulate-btn">원형 재난 발생</button>
+        </fieldset>
+
+        <fieldset style="flex: 1; min-width: 300px;">
+            <legend class="legend-polygon">3. 지역 재난 (Area)</legend>
+            <div class="form-group">
+                <label>대상 지역</label>
+                <input type="text" id="areaName-display" value="-" readonly style="background:#f9f9f9;">
+            </div>
+            <div class="form-group">
+                <label>재난 유형</label>
+                <select id="type-area">
+                    <option value="heavyRain">🌧️ 폭우</option>
+                    <option value="typhoon">🌀 태풍</option>
+                    <option value="heatwave">☀️ 폭염</option>
+                    <option value="tsunami">🌊 해일</option>
+                    <option value="fire">🔥 산불</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>지속 (분)</label>
+                <input type="number" id="duration-area" value="60">
+            </div>
+            <button id="simulate-btn-area" class="simulate-btn">지역 재난 발생</button>
+        </fieldset>
+    </div>
+
+    <div id="result"></div>
+</div>
+
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=d8822c35851508a88d440e6883daef52&libraries=services"></script>
+
+<script>
+    // --- 1. 초기화 및 주소 검색 ---
+    const geocoder = new kakao.maps.services.Geocoder();
+
+    document.getElementById('search-address-btn').addEventListener('click', () => {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                document.getElementById('address').value = data.address;
+
+                // 지역명 추출 (구/군 단위)
+                let sigungu = data.sigungu;
+                if(!sigungu && data.address.split(' ').length > 1) sigungu = data.address.split(' ')[1];
+                document.getElementById('areaName').value = sigungu;
+                document.getElementById('areaName-display').value = sigungu;
+
+                // 좌표 변환
+                geocoder.addressSearch(data.address, function(result, status) {
+                    if (status === kakao.maps.services.Status.OK) {
+                        document.getElementById('lat').value = result[0].y;
+                        document.getElementById('lon').value = result[0].x;
+                    }
+                });
+            }
+        }).open();
+    });
+
+    // --- 2. 재난 목록 불러오기 (현황판) ---
+    async function loadActiveDisasters() {
+        const tbody = document.getElementById('disaster-list-body');
+        try {
+            const response = await fetch('/api/disaster-zones');
+            const data = await response.json();
+
+            tbody.innerHTML = '';
+            if(data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#999;">현재 발령된 재난이 없습니다. ✅</td></tr>';
+                return;
+            }
+
+            data.forEach(item => {
+                const tr = document.createElement('tr');
+
+                // 위치 정보 표시 (지역명 or 좌표)
+                let locationText = item.areaName ? `[지역] ${item.areaName}` : `[좌표] ${parseFloat(item.latitude).toFixed(4)}, ${parseFloat(item.longitude).toFixed(4)}`;
+
+                // 남은 시간 계산
+                const expiry = new Date(item.expiryTime);
+                const now = new Date();
+                const diffMin = Math.ceil((expiry - now) / (1000 * 60));
+                const timeText = diffMin > 0 ? `${diffMin}분 남음` : "종료됨";
+
+                // 뱃지 색상
+                let badgeColor = '#666';
+                if(item.disasterType === 'missile') badgeColor = '#dc3545';
+                else if(item.disasterType === 'fire') badgeColor = '#fd7e14';
+                else if(item.disasterType === 'heavyRain') badgeColor = '#0d6efd';
+
+                tr.innerHTML = `
+                    <td>${item.id}</td>
+                    <td><span class="badge" style="background:${badgeColor}">${item.disasterType}</span></td>
+                    <td>${locationText}</td>
+                    <td style="color:${diffMin < 10 ? 'red' : 'black'}">${timeText}</td>
+                    <td><button class="btn-delete" onclick="deleteDisaster(${item.id})">상황 종료</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } catch (e) {
+            console.error(e);
+            tbody.innerHTML = '<tr><td colspan="5" style="color:red;">데이터 로드 실패</td></tr>';
+        }
+    }
+
+    // --- 3. 재난 삭제 (상황 종료) ---
+    window.deleteDisaster = async function(id) {
+        if(!confirm(`ID ${id}번 재난 상황을 정말 종료하시겠습니까?`)) return;
+
+        try {
+            const response = await fetch(`/api/admin/disaster/${id}`, { method: 'DELETE' });
+            if(response.ok) {
+                alert("상황이 종료되었습니다.");
+                loadActiveDisasters(); // 목록 갱신
+            } else {
+                alert("삭제 실패");
+            }
+        } catch(e) {
+            alert("오류 발생");
+        }
+    };
+
+    // --- 4. 시뮬레이션 생성 요청 ---
+    async function createDisaster(url, payload) {
+        const resultEl = document.getElementById('result');
+        resultEl.className = '';
+        resultEl.innerHTML = '⏳ 요청 처리 중...';
+
+        try {
+            const params = new URLSearchParams(payload).toString();
+            const response = await fetch(url + '?' + params, { method: 'POST' });
+            if(!response.ok) throw new Error("서버 오류");
+
+            resultEl.className = 'success';
+            resultEl.innerHTML = '✅ 재난 발령 성공! 현황판이 갱신됩니다.';
+            loadActiveDisasters(); // 성공 시 목록 자동 갱신
+        } catch (e) {
+            resultEl.className = 'error';
+            resultEl.innerHTML = '❌ 오류: ' + e.message;
+        }
+    }
+
+    document.getElementById('simulate-btn-circle').addEventListener('click', () => {
+        const lat = document.getElementById('lat').value;
+        const lon = document.getElementById('lon').value;
+        if(!lat) return alert("주소를 먼저 검색하세요.");
+
+        createDisaster('/api/admin/simulate', {
+            lat: lat, lon: lon,
+            type: document.getElementById('type-circle').value,
+            radius: document.getElementById('radius').value,
+            durationMinutes: document.getElementById('duration-circle').value
+        });
+    });
+
+    document.getElementById('simulate-btn-area').addEventListener('click', () => {
+        const areaName = document.getElementById('areaName').value;
+        if(!areaName) return alert("주소를 검색하여 지역명을 확인하세요.");
+
+        createDisaster('/api/admin/simulate-area', {
+            areaName: areaName,
+            type: document.getElementById('type-area').value,
+            durationMinutes: document.getElementById('duration-area').value
+        });
+    });
+
+    // 페이지 로드 시 목록 불러오기
+    loadActiveDisasters();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>아이디/비밀번호 찾기</title>
+    <link rel="stylesheet" href="/css/findAccount.css"/>
+</head>
+
+<!-- 🌟 파비콘 추가: /img/logo/favicon.png 및 /img/logo/favicon.ico 🌟 -->
+<link rel="icon" type="image/png" href="/img/logo/favicon.png">
+<link rel="shortcut icon" type="image/x-icon" href="/img/logo/favicon.ico">
+<body>
+
+<div class="kb-find-container">
+    <div class="kb-find-card">
+
+        <!-- 🌟 상단 필수 로고 영역 🌟 -->
+        <div class="kb-title-container">
+            <img src="/img/logo/200px-안전네비_로고.png" alt="안전네비 로고" width="40">
+            <h1 class="kb-title-text">안전네비</h1>
+        </div>
+
+        <h2 class="kb-find-title">아이디/비밀번호 찾기</h2>
+
+        <!-- 탭 메뉴 -->
+        <div class="kb-tab-menu">
+            <button class="kb-tab-btn active" data-target="find-id">아이디 찾기</button>
+            <button class="kb-tab-btn" data-target="find-pw">비밀번호 찾기</button>
+        </div>
+
+        <!-- 1. 아이디 찾기 폼 -->
+        <div id="find-id-form" class="kb-form-content active">
+            <p class="kb-form-desc">회원가입 시 등록한 이름과 dlap를 입력해주세요.</p>
+
+            <div class="kb-form-group">
+                <label for="name-id" class="kb-form-label">이름</label>
+                <input type="text" id="name-id" class="kb-form-input" placeholder="이름을 입력하세요">
+            </div>
+            <div class="kb-form-group">
+                <label for="phone-id" class="kb-form-label">전화번호</label>
+                <input type="tel" id="phone-id" class="kb-form-input" placeholder="전화번호를 입력하세요">
+            </div>
+
+            <button class="kb-submit-btn">아이디 찾기</button>
+        </div>
+
+        <!-- 2. 비밀번호 찾기 폼 -->
+        <div id="find-pw-form" class="kb-form-content">
+            <p class="kb-form-desc">가입한 아이디(이메일)와 이름, 전화번호를 입력해주세요.</p>
+
+            <div class="kb-form-group">
+                <label for="email-pw" class="kb-form-label">아이디 (이메일)</label>
+                <input type="email" id="email-pw" class="kb-form-input" placeholder="이메일을 입력하세요">
+            </div>
+            <div class="kb-form-group">
+                <label for="name-pw" class="kb-form-label">이름</label>
+                <input type="text" id="name-pw" class="kb-form-input" placeholder="이름을 입력하세요">
+            </div>
+            <div class="kb-form-group">
+                <label for="phone-pw" class="kb-form-label">전화번호</label>
+                <input type="tel" id="phone-pw" class="kb-form-input" placeholder="전화번호를 입력하세요">
+            </div>
+
+            <button class="kb-submit-btn">비밀번호 재설정</button>
+        </div>
+
+        <div class="kb-links">
+            <a href="/login" class="kb-link">로그인으로 돌아가기</a>
+            <span class="kb-divider">|</span>
+            <a href="/signup" class="kb-link">회원가입</a>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // 탭 전환 스크립트
+    const tabs = document.querySelectorAll('.kb-tab-btn');
+    const contents = document.querySelectorAll('.kb-form-content');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // 모든 탭/콘텐츠 비활성화
+            tabs.forEach(t => t.classList.remove('active'));
+            contents.forEach(c => c.classList.remove('active'));
+
+            // 클릭한 탭/콘텐츠 활성화
+            tab.classList.add('active');
+            document.getElementById(tab.dataset.target + '-form').classList.add('active');
+        });
+    });
+</script>
+
+</body>
+</html>

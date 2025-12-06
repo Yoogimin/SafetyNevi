@@ -1,0 +1,36 @@
+package com.inha.pro.safetynevi.entity.member;
+
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "SAFETY_ACCESS_LOG")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
+public class AccessLog {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Oracle 12c 이상 Identity 사용 시
+    @Column(name = "LOG_ID")
+    private Long id;
+
+    @Column(name = "USER_ID")
+    private String userId;
+
+    @Column(name = "ACCESS_TYPE") // LOGIN 또는 LOGOUT
+    private String accessType;
+
+    @Column(name = "IP_ADDRESS")
+    private String ipAddress;
+
+    @Column(name = "USER_AGENT") // 브라우저/OS 정보
+    private String userAgent;
+
+    @CreationTimestamp
+    @Column(name = "LOG_DATE")
+    private LocalDateTime logDate;
+}

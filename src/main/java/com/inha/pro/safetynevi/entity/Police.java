@@ -1,0 +1,22 @@
+package com.inha.pro.safetynevi.entity;
+
+import jakarta.persistence.*;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@EqualsAndHashCode(callSuper = true)
+@Entity
+@Table(name = "POLICE_DETAIL")
+@DiscriminatorValue("police")
+@PrimaryKeyJoinColumn(name = "FACILITY_ID")
+public class Police extends Facility {
+    @Column(name = "PHONE_NUMBER", length = 100)
+    private String phoneNumber;
+    @Column(name = "GUBUN", length = 100)
+    private String gubun;
+    @Column(name = "SIDO_CHEONG", length = 100)
+    private String sidoCheong;
+}

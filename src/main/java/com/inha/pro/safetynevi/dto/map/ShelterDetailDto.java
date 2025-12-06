@@ -1,0 +1,33 @@
+package com.inha.pro.safetynevi.dto.map;
+
+import com.inha.pro.safetynevi.entity.Shelter;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@NoArgsConstructor
+public class ShelterDetailDto {
+    private Long id;
+    private String type;
+    private String name;
+    private String address;
+    private double latitude;
+    private double longitude;
+    private String operatingStatus;
+    private Double areaM2;
+    private Integer maxCapacity;
+    private String locationType;
+
+    public ShelterDetailDto(Shelter shelter) {
+        this.id = shelter.getId();
+        this.type = shelter.getType();
+        this.name = shelter.getName();
+        this.address = shelter.getAddress();
+        this.latitude = shelter.getLatitude();
+        this.longitude = shelter.getLongitude();
+        this.operatingStatus = shelter.getOperatingStatus();
+        this.areaM2 = shelter.getAreaM2();
+        this.maxCapacity = shelter.getMaxCapacity();
+        this.locationType = shelter.getLocationType();
+    }
+}
